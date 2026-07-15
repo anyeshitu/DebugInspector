@@ -1,0 +1,19 @@
+<resources>
+    <color name="inspector_background">#FAFAFA</color>
+    <color name="inspector_surface">#FFFFFF</color>
+    <color name="inspector_primary">#01579B</color>
+    <color name="inspector_primary_dark">#002F6C</color>
+    <color name="inspector_secondary">#009E09</color>
+    <color name="inspector_error">#F44336</color>
+    <color name="inspector_status_2xx">#009E09</color>
+    <color name="inspector_status_3xx">#0D47A1</color>
+    <color name="inspector_status_4xx">#EF6C00</color>
+    <color name="inspector_status_5xx">#B71C1C</color>
+    <color name="inspector_status_idle">#757575</color>
+    <color name="inspector_text">#212121</color>
+    <color name="inspector_text_secondary">#616161</color>
+    <color name="inspector_muted">#8A8A8A</color>
+    <color name="inspector_divider">#E0E0E0</color>
+    <color name="inspector_on_primary">#FFFFFF</color>
+    <color name="inspector_pressed">#14000000</color>
+</resources>

@@ -1,0 +1,58 @@
+<resources>
+    <style name="InspectorTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/inspector_primary</item>
+        <item name="android:statusBarColor">@color/inspector_primary_dark</item>
+        <item name="android:navigationBarColor">@color/inspector_surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/inspector_background</item>
+    </style>
+
+    <style name="Inspector.ToolbarButton" parent="android:style/Widget.Material.Button.Borderless">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:textColor">@color/inspector_on_primary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans</item>
+    </style>
+
+    <style name="Inspector.IconButton" parent="android:style/Widget.Material.Button.Borderless">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textColor">@color/inspector_on_primary</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="Inspector.Tab" parent="android:style/Widget.Material.Button.Borderless">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textColor">@color/inspector_text_secondary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="Inspector.ActionButton" parent="android:style/Widget.Material.Button.Borderless">
+        <item name="android:layout_width">96dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:textColor">@color/inspector_secondary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Inspector.AppBarTitle" parent="android:style/Widget.TextView">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@color/inspector_on_primary</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+</resources>

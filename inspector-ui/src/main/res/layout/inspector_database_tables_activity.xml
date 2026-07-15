@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/inspector_toolbar_height"
+        android:background="@color/inspector_primary"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp">
+
+        <Button android:id="@+id/database_back" style="@style/Inspector.IconButton" android:contentDescription="@string/inspector_back" android:text="@string/inspector_back_symbol" />
+        <TextView android:id="@+id/database_title" style="@style/Inspector.AppBarTitle" android:textSize="18sp" />
+        <Button android:id="@+id/database_refresh" style="@style/Inspector.IconButton" android:contentDescription="@string/inspector_refresh" android:text="@string/inspector_refresh_symbol" />
+    </LinearLayout>
+
+    <TextView android:id="@android:id/empty" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:gravity="center" android:padding="32dp" android:text="@string/inspector_no_tables" android:textColor="@color/inspector_muted" android:textSize="15sp" android:visibility="gone" />
+    <ListView android:id="@android:id/list" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:background="@color/inspector_surface" android:divider="@color/inspector_divider" android:dividerHeight="1dp" android:listSelector="?android:attr/selectableItemBackground" />
+</LinearLayout>

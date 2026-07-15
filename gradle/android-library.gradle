@@ -1,0 +1,84 @@
+apply plugin: "com.android.library"
+apply plugin: "maven-publish"
+
+android {
+    compileSdkVersion rootProject.ext.compileSdk
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdk
+        targetSdkVersion rootProject.ext.targetSdk
+        versionCode 1
+        versionName project.version
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lintOptions {
+        abortOnError true
+        checkReleaseBuilds true
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+}
+
+task androidSourcesJar(type: Jar) {
+    archiveClassifier.set("sources")
+    from project.extensions.getByName("android").sourceSets.main.java.srcDirs
+}
+
+if (System.getenv("DEBUG_INSPECTOR_OFFLINE_FLATDIR")) {
+    ["Debug", "Release"].each { variantName ->
+        def lower = variantName.toLowerCase()
+        def prepareTask = tasks.create("prepareOffline${variantName}Typedef") {
+            doLast {
+                def output = file("${buildDir}/intermediates/annotations_typedef_file/${lower}/typedefs.txt")
+                output.parentFile.mkdirs()
+                output.setText("", "UTF-8")
+            }
+        }
+        tasks.matching { it.name == "sync${variantName}LibJars" }.all {
+            dependsOn prepareTask
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId project.group
+                artifactId project.name
+                version project.version
+                from components.release
+                artifact androidSourcesJar
+                pom {
+                    name = project.name
+                    description = "DebugInspector Android debugging SDK module"
+                    licenses {
+                        license {
+                            name = "The Apache License, Version 2.0"
+                            url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                        }
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                name = "localDebugInspector"
+                url = uri(rootProject.file("local-maven"))
+            }
+        }
+    }
+}
+
+dependencies {
+    testImplementation "junit:junit:${rootProject.ext.junitVersion}"
+    testImplementation "org.hamcrest:hamcrest-core:1.3"
+}

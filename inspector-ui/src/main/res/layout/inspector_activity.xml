@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/inspector_toolbar_height"
+        android:background="@color/inspector_primary"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/inspector_page_padding"
+        android:paddingEnd="4dp">
+
+        <TextView
+            android:id="@+id/inspector_title"
+            style="@style/Inspector.AppBarTitle"
+            android:text="@string/inspector_name" />
+
+        <Button
+            android:id="@+id/inspector_pause"
+            style="@style/Inspector.ToolbarButton"
+            android:text="@string/inspector_pause" />
+
+        <Button
+            android:id="@+id/inspector_clear"
+            style="@style/Inspector.ToolbarButton"
+            android:text="@string/inspector_clear" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/inspector_surface"
+        android:elevation="2dp"
+        android:orientation="horizontal">
+
+        <TextView android:id="@+id/tab_http" style="@style/Inspector.Tab" android:background="@drawable/inspector_tab_background" android:gravity="center" android:text="@string/inspector_http" />
+        <TextView android:id="@+id/tab_websocket" style="@style/Inspector.Tab" android:background="@drawable/inspector_tab_background" android:gravity="center" android:text="@string/inspector_websocket" />
+        <TextView android:id="@+id/tab_serial" style="@style/Inspector.Tab" android:background="@drawable/inspector_tab_background" android:gravity="center" android:text="@string/inspector_serial" />
+        <TextView android:id="@+id/tab_database" style="@style/Inspector.Tab" android:background="@drawable/inspector_tab_background" android:gravity="center" android:text="@string/inspector_database" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="@color/inspector_surface"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/inspector_spacing_small"
+        android:paddingEnd="4dp">
+
+        <EditText
+            android:id="@+id/inspector_search"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:background="@drawable/inspector_search_background"
+            android:hint="@string/inspector_search_hint"
+            android:imeOptions="actionSearch"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:singleLine="true"
+            android:textColor="@color/inspector_text"
+            android:textColorHint="@color/inspector_muted"
+            android:textSize="15sp" />
+
+        <Spinner
+            android:id="@+id/inspector_filter"
+            android:layout_width="104dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp" />
+
+        <Button
+            android:id="@+id/inspector_refresh"
+            style="@style/Inspector.IconButton"
+            android:contentDescription="@string/inspector_refresh"
+            android:text="@string/inspector_refresh_symbol"
+            android:textColor="@color/inspector_primary" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@android:id/empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:padding="32dp"
+        android:text="@string/inspector_empty"
+        android:textColor="@color/inspector_muted"
+        android:textSize="15sp"
+        android:visibility="gone" />
+
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/inspector_surface"
+        android:clipToPadding="false"
+        android:divider="@color/inspector_divider"
+        android:dividerHeight="1dp"
+        android:listSelector="?android:attr/selectableItemBackground" />
+</LinearLayout>

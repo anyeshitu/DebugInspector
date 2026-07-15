@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sample_name">DebugInspector 示例</string>
+    <string name="sample_open">打开调试检查器</string>
+    <string name="sample_http">生成加密 HTTP 记录</string>
+    <string name="sample_websocket">记录 WebSocket 事件</string>
+    <string name="sample_serial">记录串口 TX/RX</string>
+    <string name="sample_ready">选择一个操作生成调试数据。</string>
+    <string name="sample_http_loading">正在生成加密 HTTP 请求...</string>
+    <string name="sample_http_complete">HTTP 记录已生成，打开调试检查器查看明文和密文。</string>
+    <string name="sample_ws_complete">WebSocket 事件已记录。</string>
+    <string name="sample_serial_complete">串口 TX/RX 字节已记录，SDK 未操作串口。</string>
+    <string name="sample_database">示例作业数据</string>
+    <string name="sample_work_a">地块 A 播种</string>
+    <string name="sample_work_b">地块 B 补播</string>
+    <string name="sample_complete">完成</string>
+    <string name="sample_waiting">等待</string>
+</resources>

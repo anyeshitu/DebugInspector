@@ -1,0 +1,16 @@
+<resources>
+    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#0B6E4F</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:statusBarColor">#F4F6F5</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+    <style name="SampleButton" parent="android:style/Widget.Material.Button">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:textColor">#0B6E4F</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+</resources>

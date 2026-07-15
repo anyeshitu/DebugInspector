@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/inspector_toolbar_height"
+        android:background="@color/inspector_primary"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp">
+
+        <Button android:id="@+id/rows_back" style="@style/Inspector.IconButton" android:contentDescription="@string/inspector_back" android:text="@string/inspector_back_symbol" />
+        <TextView android:id="@+id/rows_title" style="@style/Inspector.AppBarTitle" android:textSize="18sp" />
+        <Button android:id="@+id/rows_export_csv" style="@style/Inspector.ToolbarButton" android:text="@string/inspector_format_csv" />
+        <Button android:id="@+id/rows_export_json" style="@style/Inspector.ToolbarButton" android:text="@string/inspector_format_json" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="@color/inspector_surface"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="4dp">
+
+        <Spinner android:id="@+id/rows_filter_column" android:layout_width="112dp" android:layout_height="48dp" />
+        <EditText android:id="@+id/rows_filter_value" android:layout_width="0dp" android:layout_height="44dp" android:layout_marginStart="4dp" android:layout_weight="1" android:background="@drawable/inspector_search_background" android:hint="@string/inspector_filter_value" android:importantForAutofill="no" android:inputType="text" android:paddingStart="12dp" android:paddingEnd="12dp" android:singleLine="true" android:textColor="@color/inspector_text" android:textColorHint="@color/inspector_muted" android:textSize="15sp" />
+        <Button android:id="@+id/rows_apply_filter" style="@style/Inspector.ActionButton" android:layout_width="64dp" android:text="@string/inspector_apply" />
+    </LinearLayout>
+
+    <TextView android:id="@android:id/empty" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:gravity="center" android:padding="32dp" android:text="@string/inspector_no_rows" android:textColor="@color/inspector_muted" android:textSize="15sp" android:visibility="gone" />
+    <ListView android:id="@android:id/list" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:background="@color/inspector_surface" android:divider="@color/inspector_divider" android:dividerHeight="1dp" android:listSelector="?android:attr/selectableItemBackground" />
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:background="@color/inspector_surface" android:gravity="center" android:orientation="horizontal">
+        <Button android:id="@+id/rows_previous" style="@style/Inspector.ActionButton" android:text="@string/inspector_previous" />
+        <TextView android:id="@+id/rows_page" android:layout_width="104dp" android:layout_height="wrap_content" android:gravity="center" android:textColor="@color/inspector_text_secondary" android:textSize="14sp" />
+        <Button android:id="@+id/rows_next" style="@style/Inspector.ActionButton" android:text="@string/inspector_next" />
+    </LinearLayout>
+</LinearLayout>

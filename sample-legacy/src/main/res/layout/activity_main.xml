@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAFAFA"
+    android:orientation="vertical"
+    android:padding="20dp">
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/sample_name" android:textColor="#212121" android:textSize="24sp" android:textStyle="bold" />
+    <Button android:id="@+id/sample_open" style="@style/SampleButton" android:text="@string/sample_open" />
+    <Button android:id="@+id/sample_http" style="@style/SampleButton" android:text="@string/sample_http" />
+    <Button android:id="@+id/sample_websocket" style="@style/SampleButton" android:text="@string/sample_websocket" />
+    <Button android:id="@+id/sample_serial" style="@style/SampleButton" android:text="@string/sample_serial" />
+    <TextView android:id="@+id/sample_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="@string/sample_ready" android:textColor="#616161" android:textSize="16sp" />
+</LinearLayout>

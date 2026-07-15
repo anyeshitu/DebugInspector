@@ -1,0 +1,37 @@
+apply plugin: "java-library"
+apply plugin: "maven-publish"
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+task sourcesJar(type: Jar) {
+    archiveClassifier.set("sources")
+    from sourceSets.main.allSource
+}
+
+publishing {
+    publications {
+        javaLibrary(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            groupId project.group
+            artifactId project.name
+            version project.version
+            pom {
+                name = project.name
+                description = "Stable Java 8 contracts for DebugInspector"
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "localDebugInspector"
+            url = uri(rootProject.file("local-maven"))
+        }
+    }
+}
+
+dependencies {
+    testImplementation "junit:junit:${rootProject.ext.junitVersion}"
+    testImplementation "org.hamcrest:hamcrest-core:1.3"
+}

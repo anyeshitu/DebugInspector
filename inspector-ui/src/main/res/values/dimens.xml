@@ -1,0 +1,7 @@
+<resources>
+    <dimen name="inspector_page_padding">16dp</dimen>
+    <dimen name="inspector_spacing_small">8dp</dimen>
+    <dimen name="inspector_toolbar_height">56dp</dimen>
+    <dimen name="inspector_touch_target">48dp</dimen>
+    <dimen name="inspector_status_width">56dp</dimen>
+</resources>

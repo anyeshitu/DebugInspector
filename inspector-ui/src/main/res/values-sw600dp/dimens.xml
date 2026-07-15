@@ -1,0 +1,3 @@
+<resources>
+    <dimen name="inspector_page_padding">24dp</dimen>
+</resources>

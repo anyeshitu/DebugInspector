@@ -1,0 +1,10 @@
+DebugInspector is an independent implementation informed by public behavior and
+interaction patterns from these projects:
+
+- Chucker, Apache License 2.0: https://github.com/ChuckerTeam/chucker
+- WormaCeptor, Apache License 2.0: https://github.com/azikar24/WormaCeptor
+- wiretapKMP, MIT License: https://github.com/skymansandy/wiretapKMP
+
+No source from those projects is copied into this repository without explicit
+attribution and license review.
+

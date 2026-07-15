@@ -1,0 +1,116 @@
+buildscript {
+    repositories {
+        def offlineFlatDir = System.getenv("DEBUG_INSPECTOR_OFFLINE_FLATDIR")
+        if (offlineFlatDir) {
+            flatDir { dirs offlineFlatDir }
+        }
+        def offlineRepository = System.getenv("DEBUG_INSPECTOR_OFFLINE_REPO")
+        if (offlineRepository) {
+            maven { url uri(offlineRepository) }
+        }
+        maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
+        maven { url "https://maven.aliyun.com/repository/google" }
+        maven { url "https://maven.aliyun.com/repository/public" }
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:4.2.1"
+        def offlineFlatDir = System.getenv("DEBUG_INSPECTOR_OFFLINE_FLATDIR")
+        if (offlineFlatDir) {
+            classpath fileTree(dir: offlineFlatDir, include: ["*.jar"])
+        }
+    }
+
+    configurations.classpath {
+        if (System.getenv("DEBUG_INSPECTOR_OFFLINE_FLATDIR")) {
+            exclude group: "com.google.guava", module: "guava"
+            exclude group: "com.google.code.findbugs", module: "jsr305"
+            exclude group: "org.checkerframework", module: "checker-qual"
+            exclude group: "com.google.errorprone", module: "error_prone_annotations"
+        }
+    }
+}
+
+allprojects {
+    group = "com.allynav.debug"
+    version = "0.1.0-SNAPSHOT"
+
+    repositories {
+        def offlineFlatDir = System.getenv("DEBUG_INSPECTOR_OFFLINE_FLATDIR")
+        if (offlineFlatDir) {
+            flatDir { dirs offlineFlatDir }
+        }
+        def offlineRepository = System.getenv("DEBUG_INSPECTOR_OFFLINE_REPO")
+        if (offlineRepository) {
+            maven { url uri(offlineRepository) }
+        }
+        maven { url "https://maven.aliyun.com/repository/google" }
+        maven { url "https://maven.aliyun.com/repository/public" }
+        google()
+        mavenCentral()
+    }
+}
+
+ext {
+    compileSdk = 30
+    minSdk = 23
+    targetSdk = 30
+    okHttp3Version = "3.4.1"
+    okioVersion = "1.10.0"
+    junitVersion = "4.13.2"
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+task dependencyIsolationCheck {
+    group = "verification"
+    description = "Fails when legacy production build files reference prohibited modern dependencies."
+    doLast {
+        def prohibited = ["androidx.compose", "org.jetbrains.kotlin", "io.ktor", "okhttp:4.", "okhttp:5.", "androidx.room"]
+        def productionFiles = subprojects.collect { it.buildFile }
+        productionFiles.each { file ->
+            def text = file.getText("UTF-8")
+            prohibited.each { marker ->
+                if (text.contains(marker)) {
+                    throw new GradleException("Prohibited legacy dependency marker '${marker}' in ${file}")
+                }
+            }
+        }
+    }
+}
+
+task apiCheck {
+    group = "verification"
+    dependsOn ":inspector-api:compileJava"
+    doLast {
+        def prohibited = ["okhttp3.", "retrofit2.", "androidx.room", "androidx.compose", "android.hardware.usb"]
+        fileTree("inspector-api/src/main/java").matching { include "**/*.java" }.each { source ->
+            def text = source.getText("UTF-8")
+            prohibited.each { marker ->
+                if (text.contains(marker)) throw new GradleException("Public API leaks prohibited type '${marker}' in ${source}")
+            }
+        }
+        if (!file("inspector-api/public-api.txt").isFile()) throw new GradleException("Missing frozen public API manifest")
+    }
+}
+
+task noOpParityCheck {
+    group = "verification"
+    doLast {
+        def signatures = { File source ->
+            source.readLines("UTF-8")
+                    .findAll { it.startsWith("    public ") && it.contains("(") }
+                    .collect { it = it.trim(); it.contains("{") ? it.substring(0, it.indexOf("{")).trim() : it }
+                    .toSet()
+        }
+        def fullFacade = signatures(file("inspector/src/main/java/com/allynav/debug/inspector/DebugInspector.java"))
+        def noOpFacade = signatures(file("inspector-no-op/src/main/java/com/allynav/debug/inspector/DebugInspector.java"))
+        if (fullFacade != noOpFacade) throw new GradleException("DebugInspector full/no-op API mismatch: ${fullFacade - noOpFacade} / ${noOpFacade - fullFacade}")
+        def fullInterceptor = signatures(file("inspector-okhttp3/src/main/java/com/allynav/debug/inspector/okhttp3/DebugInspectorInterceptor.java"))
+        def noOpInterceptor = signatures(file("inspector-no-op/src/main/java/com/allynav/debug/inspector/okhttp3/DebugInspectorInterceptor.java"))
+        if (fullInterceptor != noOpInterceptor) throw new GradleException("OkHttp interceptor full/no-op API mismatch: ${fullInterceptor - noOpInterceptor} / ${noOpInterceptor - fullInterceptor}")
+    }
+}
