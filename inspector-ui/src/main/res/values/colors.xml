@@ -16,4 +16,6 @@
     <color name="inspector_divider">#E0E0E0</color>
     <color name="inspector_on_primary">#FFFFFF</color>
     <color name="inspector_pressed">#14000000</color>
+    <color name="inspector_table_header">#F1F3F4</color>
+    <color name="inspector_table_alternate">#FAFAFA</color>
 </resources>

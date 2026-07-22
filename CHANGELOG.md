@@ -6,5 +6,6 @@
 - HTTP raw/transformed capture, Header redaction and text/cURL/JSON/HAR sharing.
 - Manual WebSocket and serial event reporting.
 - Read-only SQLite discovery, browsing and CSV/JSON export.
+- Database table rows rendered as a horizontally scrollable column grid with row details.
 - Simplified Chinese platform View/XML UI with English fallback.
 - Full debug and release no-op integration artifacts.
