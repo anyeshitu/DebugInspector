@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.allynav.debug.inspector.feature.database">
+    <application>
+        <meta-data android:name="com.allynav.debug.inspector.feature.DATABASE"
+            android:value="true" />
+    </application>
+</manifest>

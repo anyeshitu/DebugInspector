@@ -1,9 +1,11 @@
 apply from: rootProject.file("gradle/android-library.gradle")
 
+android.sourceSets.main.java.srcDirs = []
+
 dependencies {
-    api project(":inspector-api")
-    api project(":inspector-core")
-    api project(":inspector-ui")
-    api project(":inspector-okhttp3")
+    api project(":inspector-http")
+    api project(":inspector-websocket")
+    api project(":inspector-serial")
+    api project(":inspector-database")
 }
 

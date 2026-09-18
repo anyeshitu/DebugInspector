@@ -1,0 +1,9 @@
+apply from: rootProject.file("gradle/android-library.gradle")
+
+android.sourceSets.main.java.srcDirs = [rootProject.file("inspector/src/main/java")]
+
+dependencies {
+    api project(":inspector-api")
+    api project(":inspector-core")
+    api project(":inspector-ui")
+}

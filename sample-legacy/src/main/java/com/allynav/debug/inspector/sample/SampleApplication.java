@@ -19,7 +19,8 @@ public final class SampleApplication extends Application {
                 .addBodyTransformer(new SampleCryptoTransformer())
                 .addDatabase(new DatabaseRegistration(getString(R.string.sample_database), getDatabasePath("sample.db").getAbsolutePath()))
                 .entryConfig(EntryConfig.builder().notificationEnabled(true)
-                        .shortcutEnabled(true).shakeEnabled(false).build())
+                        .shortcutEnabled(!BuildConfig.APPLICATION_ID.endsWith(".selective"))
+                        .shakeEnabled(false).build())
                 .build();
         DebugInspector.initialize(this, config);
     }

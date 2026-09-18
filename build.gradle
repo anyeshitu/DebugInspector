@@ -34,7 +34,7 @@ buildscript {
 
 allprojects {
     group = "com.allynav.debug"
-    version = "0.1.0-SNAPSHOT"
+    version = "1.0.0"
 
     repositories {
         def offlineFlatDir = System.getenv("DEBUG_INSPECTOR_OFFLINE_FLATDIR")
@@ -112,5 +112,28 @@ task noOpParityCheck {
         def fullInterceptor = signatures(file("inspector-okhttp3/src/main/java/com/allynav/debug/inspector/okhttp3/DebugInspectorInterceptor.java"))
         def noOpInterceptor = signatures(file("inspector-no-op/src/main/java/com/allynav/debug/inspector/okhttp3/DebugInspectorInterceptor.java"))
         if (fullInterceptor != noOpInterceptor) throw new GradleException("OkHttp interceptor full/no-op API mismatch: ${fullInterceptor - noOpInterceptor} / ${noOpInterceptor - fullInterceptor}")
+    }
+}
+
+task featureIsolationCheck {
+    group = "verification"
+    description = "Verifies aggregate and selective feature markers in merged sample manifests."
+    dependsOn ":sample-legacy:processDebugMainManifest", ":sample-legacy:processSelectiveMainManifest"
+    doLast {
+        def features = ["HTTP", "WEBSOCKET", "SERIAL", "DATABASE"]
+        def verify = { String variant, Set<String> expected ->
+            def manifest = file("sample-legacy/build/intermediates/merged_manifests/${variant}/AndroidManifest.xml")
+            if (!manifest.isFile()) throw new GradleException("Missing ${variant} merged manifest")
+            def text = manifest.getText("UTF-8")
+            features.each { feature ->
+                def marker = "com.allynav.debug.inspector.feature.${feature}"
+                def present = text.contains(marker)
+                if (present != expected.contains(feature)) {
+                    throw new GradleException("${variant} feature ${feature}: expected ${expected.contains(feature)}, found ${present}")
+                }
+            }
+        }
+        verify("debug", features.toSet())
+        verify("selective", ["HTTP", "SERIAL"].toSet())
     }
 }

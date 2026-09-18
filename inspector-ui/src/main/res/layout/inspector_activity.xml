@@ -30,6 +30,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/inspector_tabs"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:background="@color/inspector_surface"
@@ -73,6 +74,14 @@
             android:layout_width="104dp"
             android:layout_height="48dp"
             android:layout_marginStart="4dp" />
+
+        <Button
+            android:id="@+id/inspector_exclude"
+            style="@style/Inspector.IconButton"
+            android:layout_width="72dp"
+            android:layout_height="48dp"
+            android:text="@string/inspector_exclude"
+            android:textColor="@color/inspector_primary" />
 
         <Button
             android:id="@+id/inspector_refresh"

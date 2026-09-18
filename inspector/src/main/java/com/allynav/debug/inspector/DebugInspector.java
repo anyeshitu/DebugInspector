@@ -36,4 +36,5 @@ public final class DebugInspector {
     public static void clear() { InspectorCore.clear(); }
     public static long droppedEvents() { return InspectorCore.droppedEvents(); }
     public static boolean notificationPermissionGranted(Context context) { return InspectorUi.notificationPermissionGranted(context); }
+    public static void refreshEntry(Context context, InspectorConfig config) { InspectorUi.refreshEntry(context, config); }
 }

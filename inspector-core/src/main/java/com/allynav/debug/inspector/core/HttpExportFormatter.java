@@ -6,6 +6,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 public final class HttpExportFormatter {
     public enum Format { TEXT, CURL, JSON, HAR }
 
@@ -88,7 +93,7 @@ public final class HttpExportFormatter {
             log.put("creator", new JSONObject().put("name", "DebugInspector").put("version", "0.1.0"));
             log.put("entries", entries);
             entries.put(entry);
-            entry.put("startedDateTime", record.startedAtMillis);
+            entry.put("startedDateTime", iso8601(record.startedAtMillis));
             entry.put("time", record.durationMillis);
             entry.put("request", new JSONObject()
                     .put("method", record.method)
@@ -135,5 +140,12 @@ public final class HttpExportFormatter {
 
     private static String shell(String value) {
         return "'" + (value == null ? "" : value).replace("'", "'\\''") + "'";
+    }
+
+    private static String iso8601(long millis) {
+        // HAR 标准要求 startedDateTime 使用 UTC ISO-8601 字符串，不能写入 epoch 数字。
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+        format.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return format.format(new Date(millis));
     }
 }

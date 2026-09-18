@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public final class InspectorConfig {
     private final RetentionPolicy retentionPolicy;
@@ -15,6 +16,11 @@ public final class InspectorConfig {
     private final List<DatabaseRegistration> databases;
     private final boolean captureEnabled;
     private final UiLanguage uiLanguage;
+    private final boolean alwaysReadResponseBody;
+    private final List<String> skippedPaths;
+    private final List<Pattern> skippedPathPatterns;
+    private final Set<String> skippedDomains;
+    private final List<Pattern> skippedDomainPatterns;
 
     private InspectorConfig(Builder builder) {
         retentionPolicy = builder.retentionPolicy;
@@ -24,6 +30,11 @@ public final class InspectorConfig {
         databases = Collections.unmodifiableList(new ArrayList<>(builder.databases));
         captureEnabled = builder.captureEnabled;
         uiLanguage = builder.uiLanguage;
+        alwaysReadResponseBody = builder.alwaysReadResponseBody;
+        skippedPaths = Collections.unmodifiableList(new ArrayList<>(builder.skippedPaths));
+        skippedPathPatterns = Collections.unmodifiableList(new ArrayList<>(builder.skippedPathPatterns));
+        skippedDomains = Collections.unmodifiableSet(new LinkedHashSet<>(builder.skippedDomains));
+        skippedDomainPatterns = Collections.unmodifiableList(new ArrayList<>(builder.skippedDomainPatterns));
     }
 
     public RetentionPolicy getRetentionPolicy() {
@@ -54,6 +65,26 @@ public final class InspectorConfig {
         return uiLanguage;
     }
 
+    public boolean isAlwaysReadResponseBody() {
+        return alwaysReadResponseBody;
+    }
+
+    public List<String> getSkippedPaths() {
+        return skippedPaths;
+    }
+
+    public List<Pattern> getSkippedPathPatterns() {
+        return skippedPathPatterns;
+    }
+
+    public Set<String> getSkippedDomains() {
+        return skippedDomains;
+    }
+
+    public List<Pattern> getSkippedDomainPatterns() {
+        return skippedDomainPatterns;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -66,6 +97,11 @@ public final class InspectorConfig {
         private final List<DatabaseRegistration> databases = new ArrayList<>();
         private boolean captureEnabled = true;
         private UiLanguage uiLanguage = UiLanguage.SIMPLIFIED_CHINESE;
+        private boolean alwaysReadResponseBody;
+        private final List<String> skippedPaths = new ArrayList<>();
+        private final List<Pattern> skippedPathPatterns = new ArrayList<>();
+        private final Set<String> skippedDomains = new LinkedHashSet<>();
+        private final List<Pattern> skippedDomainPatterns = new ArrayList<>();
 
         public Builder retentionPolicy(RetentionPolicy policy) {
             retentionPolicy = require(policy, "retentionPolicy");
@@ -106,6 +142,54 @@ public final class InspectorConfig {
         public Builder uiLanguage(UiLanguage language) {
             uiLanguage = require(language, "uiLanguage");
             return this;
+        }
+
+        public Builder alwaysReadResponseBody(boolean enabled) {
+            alwaysReadResponseBody = enabled;
+            return this;
+        }
+
+        /** 配置需要忽略记录的 URL 路径，保留调用方数组并避免原地修改。 */
+        public Builder skipPaths(String... paths) {
+            if (paths != null) {
+                for (String path : paths) {
+                    if (path != null && !path.trim().isEmpty()) skippedPaths.add(path.trim());
+                }
+            }
+            return this;
+        }
+
+        public Builder skipPathPatterns(Pattern... patterns) {
+            if (patterns != null) {
+                for (Pattern pattern : patterns) if (pattern != null) skippedPathPatterns.add(pattern);
+            }
+            return this;
+        }
+
+        /** Chucker 兼容别名：正则路径规则与字符串路径规则共用 skipPaths 名称。 */
+        public Builder skipPaths(Pattern... patterns) {
+            return skipPathPatterns(patterns);
+        }
+
+        public Builder skipDomains(String... domains) {
+            if (domains != null) {
+                for (String domain : domains) {
+                    if (domain != null && !domain.trim().isEmpty()) skippedDomains.add(domain.trim().toLowerCase(Locale.US));
+                }
+            }
+            return this;
+        }
+
+        public Builder skipDomainPatterns(Pattern... patterns) {
+            if (patterns != null) {
+                for (Pattern pattern : patterns) if (pattern != null) skippedDomainPatterns.add(pattern);
+            }
+            return this;
+        }
+
+        /** Chucker 兼容别名：允许直接以正则表达式配置域名忽略规则。 */
+        public Builder skipDomains(Pattern... patterns) {
+            return skipDomainPatterns(patterns);
         }
 
         public InspectorConfig build() {

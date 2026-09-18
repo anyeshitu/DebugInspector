@@ -1,0 +1,8 @@
+apply from: rootProject.file("gradle/android-library.gradle")
+
+dependencies {
+    api project(":inspector-runtime")
+    api project(":inspector-okhttp3")
+    testImplementation "com.squareup.okhttp3:okhttp:${rootProject.ext.okHttp3Version}"
+    testImplementation "com.squareup.okio:okio:${rootProject.ext.okioVersion}"
+}

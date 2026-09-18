@@ -29,7 +29,11 @@ final class EntryController {
     }
 
     static synchronized void install(Context context, EntryConfig config) {
-        if (installed) return;
+        // Application 初始化通常早于 Android 13 的运行时授权；授权返回后允许补发通知。
+        if (installed) {
+            if (config.isNotificationEnabled()) installNotification(context);
+            return;
+        }
         installed = true;
         if (config.isNotificationEnabled()) installNotification(context);
         if (config.isShortcutEnabled()) installShortcut(context);

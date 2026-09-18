@@ -1,5 +1,6 @@
 package com.allynav.debug.inspector.ui;
 
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -27,6 +28,7 @@ final class ShareFiles {
         Intent intent = new Intent(Intent.ACTION_SEND).setType(mimeType)
                 .putExtra(Intent.EXTRA_STREAM, uri)
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.setClipData(ClipData.newRawUri(file.getName(), uri));
         context.startActivity(Intent.createChooser(intent, context.getString(R.string.inspector_share_title)));
     }
 }

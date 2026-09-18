@@ -31,6 +31,11 @@ public final class InspectorUi {
         return EntryController.notificationPermissionGranted(context);
     }
 
+    public static void refreshEntry(Context context, InspectorConfig config) {
+        language = config.getUiLanguage();
+        EntryController.install(localizedContext(context.getApplicationContext()), config.getEntryConfig());
+    }
+
     static Context localizedContext(Context context) {
         if (language == UiLanguage.SYSTEM) return context;
         Locale locale = language == UiLanguage.ENGLISH ? Locale.ENGLISH : Locale.SIMPLIFIED_CHINESE;

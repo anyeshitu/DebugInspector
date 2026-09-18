@@ -13,10 +13,10 @@
         android:paddingStart="4dp"
         android:paddingEnd="4dp">
 
-        <Button android:id="@+id/detail_back" style="@style/Inspector.IconButton" android:contentDescription="@string/inspector_back" android:text="@string/inspector_back_symbol" />
+        <ImageButton android:id="@+id/detail_back" style="@style/Inspector.IconActionButton" android:contentDescription="@string/inspector_back" android:src="@drawable/inspector_ic_arrow_back_24" />
         <TextView android:id="@+id/detail_title" style="@style/Inspector.AppBarTitle" android:textSize="18sp" />
-        <Button android:id="@+id/detail_copy" style="@style/Inspector.ToolbarButton" android:text="@string/inspector_copy" />
-        <Button android:id="@+id/detail_share" style="@style/Inspector.ToolbarButton" android:text="@string/inspector_share" />
+        <ImageButton android:id="@+id/detail_save" style="@style/Inspector.IconActionButton" android:contentDescription="@string/inspector_save" android:src="@drawable/inspector_ic_save_24" />
+        <ImageButton android:id="@+id/detail_share" style="@style/Inspector.IconActionButton" android:contentDescription="@string/inspector_share" android:src="@drawable/inspector_ic_share_24" />
     </LinearLayout>
 
     <LinearLayout
@@ -30,31 +30,6 @@
         <TextView android:id="@+id/detail_tab_overview" style="@style/Inspector.Tab" android:background="@drawable/inspector_tab_background" android:gravity="center" android:text="@string/inspector_overview" />
         <TextView android:id="@+id/detail_tab_request" style="@style/Inspector.Tab" android:background="@drawable/inspector_tab_background" android:gravity="center" android:text="@string/inspector_request" />
         <TextView android:id="@+id/detail_tab_response" style="@style/Inspector.Tab" android:background="@drawable/inspector_tab_background" android:gravity="center" android:text="@string/inspector_response" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/detail_format_row"
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:background="@color/inspector_surface"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="@dimen/inspector_page_padding"
-        android:paddingEnd="@dimen/inspector_spacing_small">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/inspector_export_format"
-            android:textColor="@color/inspector_text_secondary"
-            android:textSize="13sp" />
-
-        <Spinner
-            android:id="@+id/detail_format"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1" />
     </LinearLayout>
 
     <ScrollView

@@ -1,0 +1,11 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.allynav.debug.inspector.http">
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <application>
+        <meta-data android:name="com.allynav.debug.inspector.feature.HTTP"
+            android:value="true" />
+        <activity android:name="com.allynav.debug.inspector.ui.InspectorActivity" android:exported="false" android:theme="@style/InspectorTheme" />
+        <activity android:name="com.allynav.debug.inspector.ui.InspectorDetailActivity" android:exported="false" android:theme="@style/InspectorTheme" />
+        <provider android:name="com.allynav.debug.inspector.ui.InspectorFileProvider" android:authorities="${applicationId}.debuginspector.files" android:exported="false" android:grantUriPermissions="true" />
+    </application>
+</manifest>

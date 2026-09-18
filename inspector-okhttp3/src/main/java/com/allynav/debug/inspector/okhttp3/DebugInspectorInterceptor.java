@@ -14,6 +14,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 import okhttp3.Headers;
 import okhttp3.Interceptor;
@@ -50,16 +52,20 @@ public final class DebugInspectorInterceptor implements Interceptor {
 
         long startedAt = System.currentTimeMillis();
         InspectorConfig config = InspectorCore.config();
+        if (shouldSkip(request, config)) {
+            // 忽略规则只跳过采集，必须原样返回宿主网络结果。
+            return chain.proceed(request);
+        }
         int limit = config.getRetentionPolicy().getMaxHttpBodyBytes();
         List<HttpHeader> requestHeaders = headers(request.headers());
-        BodyData requestRaw = captureRequestBody(request.body(), limit);
+        BodyData requestRaw = isOneShotOrDuplex(request.body()) ? null : captureRequestBody(request.body(), limit);
         BodyData requestPlain = transform(config, request, null, requestHeaders,
                 requestRaw, HttpTransformContext.Direction.REQUEST);
 
         try {
             Response response = chain.proceed(request);
             List<HttpHeader> responseHeaders = headers(response.headers());
-            BodyData responseRaw = captureResponseBody(response, limit);
+            BodyData responseRaw = captureResponseBody(response, limit, config.isAlwaysReadResponseBody());
             BodyData responsePlain = transform(config, request, response, responseHeaders,
                     responseRaw, HttpTransformContext.Direction.RESPONSE);
             report(request, response, startedAt, requestHeaders, responseHeaders,
@@ -119,11 +125,15 @@ public final class DebugInspectorInterceptor implements Interceptor {
         return body(sink.bytes(), mediaType, sink.totalBytes(), sink.totalBytes() > limit, error);
     }
 
-    private static BodyData captureResponseBody(Response response, int limit) {
+    private static BodyData captureResponseBody(Response response, int limit, boolean alwaysReadResponseBody) {
         ResponseBody body = response.body();
         if (body == null) return null;
         try {
-            ResponseBody peeked = response.peekBody((long) limit + 1L);
+            // OkHttp 3.4.1 的 peekBody 不消费宿主响应；即使宿主未读取响应，也能安全保留受限副本。
+            // alwaysReadResponseBody 保留为兼容配置入口，仍严格遵守单条正文大小上限。
+            // 开启兼容模式时主动读到 EOF；默认仍只读取上限加一字节，避免无界内存占用。
+            long peekLimit = alwaysReadResponseBody ? Long.MAX_VALUE : (long) limit + 1L;
+            ResponseBody peeked = response.peekBody(peekLimit);
             byte[] bytes = peeked.bytes();
             long declared = body.contentLength();
             long original = declared >= 0 ? declared : bytes.length;
@@ -139,13 +149,50 @@ public final class DebugInspectorInterceptor implements Interceptor {
         }
     }
 
+    private static boolean shouldSkip(Request request, InspectorConfig config) {
+        String path = request.url().encodedPath();
+        if (path == null || path.isEmpty()) path = "/";
+        for (String skipped : config.getSkippedPaths()) {
+            if (path.equals(skipped)) return true;
+        }
+        for (Pattern pattern : config.getSkippedPathPatterns()) {
+            if (pattern.matcher(path).matches()) return true;
+        }
+
+        String host = request.url().host();
+        if (host == null) host = "";
+        host = host.toLowerCase(Locale.US);
+        if (config.getSkippedDomains().contains(host)) return true;
+        for (Pattern pattern : config.getSkippedDomainPatterns()) {
+            if (pattern.matcher(host).matches()) return true;
+        }
+        return false;
+    }
+
+    private static boolean isOneShotOrDuplex(RequestBody body) {
+        if (body == null) return false;
+        // 兼容新旧 OkHttp：3.4.1 没有这些方法，宿主升级后通过反射避免消费一次性正文。
+        return invokeBoolean(body, "isOneShot") || invokeBoolean(body, "isDuplex");
+    }
+
+    private static boolean invokeBoolean(RequestBody body, String methodName) {
+        try {
+            java.lang.reflect.Method method = body.getClass().getMethod(methodName);
+            Object value = method.invoke(body);
+            return value instanceof Boolean && (Boolean) value;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
     private static BodyData transform(InspectorConfig config, Request request, Response response,
                                       List<HttpHeader> headers, BodyData raw,
                                       HttpTransformContext.Direction direction) {
         if (raw == null) return null;
+        // Retrofit 2.11 将 Invocation 放在 OkHttp 的类型化 tag 中；同时兼容旧版 OkHttp 的无类型 tag。
         HttpTransformContext context = new HttpTransformContext(direction, request.method(),
                 request.url().toString(), response == null ? -1 : response.code(), headers,
-                raw.getContentType(), request.tag());
+                raw.getContentType(), hostTag(request));
         for (HttpBodyTransformer transformer : config.getBodyTransformers()) {
             try {
                 if (!transformer.supports(context)) continue;
@@ -157,6 +204,17 @@ public final class DebugInspectorInterceptor implements Interceptor {
             }
         }
         return null;
+    }
+
+    private static Object hostTag(Request request) {
+        try {
+            Class<?> invocationClass = Class.forName("retrofit2.Invocation");
+            java.lang.reflect.Method typedTag = request.getClass().getMethod("tag", Class.class);
+            return typedTag.invoke(request, invocationClass);
+        } catch (Exception ignored) {
+            // OkHttp 3.4 只有无类型 tag；旧宿主仍可通过该路径提供上下文。
+            return request.tag();
+        }
     }
 
     private static BodyData body(byte[] bytes, MediaType mediaType, long originalLength,

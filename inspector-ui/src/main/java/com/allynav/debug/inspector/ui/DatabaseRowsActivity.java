@@ -1,12 +1,16 @@
 package com.allynav.debug.inspector.ui;
 
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -24,11 +28,17 @@ import com.allynav.debug.inspector.core.DatabaseInspector;
 import com.allynav.debug.inspector.core.InspectorCore;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class DatabaseRowsActivity extends InspectorBaseActivity {
     private static final int PAGE_SIZE = 50;
+    private static final int REQUEST_EXPORT_FOLDER = 7101;
+    private static final String STATE_PENDING_EXPORT_JSON = "pending_export_json";
     private static final String EXTRA_PATH = "path";
     private static final String EXTRA_TABLE = "table";
     private String path;
@@ -42,6 +52,7 @@ public final class DatabaseRowsActivity extends InspectorBaseActivity {
     private EditText filterValue;
     private Button previous;
     private Button next;
+    private boolean pendingExportJson;
 
     static Intent intent(Context context, String path, String table) {
         return new Intent(context, DatabaseRowsActivity.class).putExtra(EXTRA_PATH, path).putExtra(EXTRA_TABLE, table);
@@ -52,6 +63,7 @@ public final class DatabaseRowsActivity extends InspectorBaseActivity {
         setContentView(R.layout.inspector_database_rows_activity);
         path = getIntent().getStringExtra(EXTRA_PATH);
         table = getIntent().getStringExtra(EXTRA_TABLE);
+        if (savedInstanceState != null) pendingExportJson = savedInstanceState.getBoolean(STATE_PENDING_EXPORT_JSON);
         ((TextView) findViewById(R.id.rows_title)).setText(table);
         filterColumn = findViewById(R.id.rows_filter_column);
         filterValue = findViewById(R.id.rows_filter_value);
@@ -65,9 +77,46 @@ public final class DatabaseRowsActivity extends InspectorBaseActivity {
         findViewById(R.id.rows_apply_filter).setOnClickListener(v -> { offset = 0; load(); });
         previous.setOnClickListener(v -> { offset = Math.max(0, offset - PAGE_SIZE); load(); });
         next.setOnClickListener(v -> { offset += PAGE_SIZE; load(); });
-        findViewById(R.id.rows_export_csv).setOnClickListener(v -> export(false));
-        findViewById(R.id.rows_export_json).setOnClickListener(v -> export(true));
+        findViewById(R.id.rows_export_csv).setOnClickListener(v -> chooseExportFolder(false));
+        findViewById(R.id.rows_export_json).setOnClickListener(v -> chooseExportFolder(true));
         load();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean(STATE_PENDING_EXPORT_JSON, pendingExportJson);
+        super.onSaveInstanceState(outState);
+    }
+
+    private void chooseExportFolder(boolean json) {
+        pendingExportJson = json;
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                        | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+        startActivityForResult(intent, REQUEST_EXPORT_FOLDER);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != REQUEST_EXPORT_FOLDER || resultCode != RESULT_OK || data == null || data.getData() == null) return;
+        final Uri folder = data.getData();
+        try {
+            int takeFlags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            if (takeFlags != 0) getContentResolver().takePersistableUriPermission(folder, takeFlags);
+        } catch (SecurityException ignored) {
+            // Some providers grant a one-shot tree permission only.
+        }
+        final boolean json = pendingExportJson;
+        final String fileName = safeFileName(table) + (json ? ".json" : ".csv");
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.inspector_export_confirm_title)
+                .setMessage(getString(R.string.inspector_export_confirm_message, fileName))
+                .setNegativeButton(R.string.inspector_cancel, null)
+                .setPositiveButton(R.string.inspector_confirm, (dialog, which) -> exportToFolder(folder, json, fileName))
+                .show();
     }
 
     private void load() {
@@ -215,29 +264,22 @@ public final class DatabaseRowsActivity extends InspectorBaseActivity {
         return value.replace('\r', ' ').replace('\n', ' ');
     }
 
-    private void export(boolean json) {
+    private void exportToFolder(final Uri folder, final boolean json, final String fileName) {
         final String column = selectedColumn();
         final String value = filterValue.getText().toString();
-        new AsyncTask<Void, Void, ExportResult>() {
-            @Override protected ExportResult doInBackground(Void... ignored) {
-                try {
-                    File directory = ShareFiles.exportDirectory(DatabaseRowsActivity.this);
-                    File file = new File(directory, safeFileName(table) + (json ? ".json" : ".csv"));
-                    DatabaseInspector.ExportResult result = InspectorCore.databaseInspector().export(path, table,
-                            column, value, file, json, InspectorCore.config().getRetentionPolicy().getMaxDatabaseExportRows());
-                    return new ExportResult(result, null);
-                } catch (Exception error) { return new ExportResult(null, error.toString()); }
-            }
-            @Override protected void onPostExecute(ExportResult result) {
-                if (result.value == null) {
-                    Toast.makeText(DatabaseRowsActivity.this, getString(R.string.inspector_export_failed, result.error), Toast.LENGTH_LONG).show();
-                    return;
-                }
-                String suffix = result.value.truncated ? getString(R.string.inspector_export_truncated) : "";
-                Toast.makeText(DatabaseRowsActivity.this, getString(R.string.inspector_export_complete, result.value.rows, suffix), Toast.LENGTH_SHORT).show();
-                ShareFiles.share(DatabaseRowsActivity.this, result.value.file, json ? "application/json" : "text/csv");
-            }
-        }.execute();
+        new FolderExportTask(this, folder, json, fileName, path, table, column, value,
+                InspectorCore.config().getRetentionPolicy().getMaxDatabaseExportRows()).execute();
+    }
+
+    private static void copyFile(File source, ContentResolver resolver, Uri target) throws Exception {
+        try (InputStream input = new FileInputStream(source);
+             OutputStream output = resolver.openOutputStream(target, "w")) {
+            if (output == null) throw new IllegalStateException("Unable to open export document");
+            byte[] buffer = new byte[8192];
+            int count;
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            output.flush();
+        }
     }
 
     private String selectedColumn() {
@@ -265,8 +307,70 @@ public final class DatabaseRowsActivity extends InspectorBaseActivity {
         final DatabaseInspector.RowPage page; final String error;
         Result(DatabaseInspector.RowPage page, String error) { this.page = page; this.error = error; }
     }
-    private static final class ExportResult {
+    private static final class FolderExportResult {
         final DatabaseInspector.ExportResult value; final String error;
-        ExportResult(DatabaseInspector.ExportResult value, String error) { this.value = value; this.error = error; }
+        FolderExportResult(DatabaseInspector.ExportResult value, String error) { this.value = value; this.error = error; }
+    }
+
+    private static final class FolderExportTask extends AsyncTask<Void, Void, FolderExportResult> {
+        private final WeakReference<DatabaseRowsActivity> activityReference;
+        private final File exportDirectory;
+        private final ContentResolver contentResolver;
+        private final Uri folder;
+        private final boolean json;
+        private final String fileName;
+        private final String path;
+        private final String table;
+        private final String column;
+        private final String filterValue;
+        private final int maxRows;
+
+        FolderExportTask(DatabaseRowsActivity activity, Uri folder, boolean json, String fileName,
+                         String path, String table, String column, String filterValue, int maxRows) {
+            this.activityReference = new WeakReference<>(activity);
+            this.exportDirectory = ShareFiles.exportDirectory(activity.getApplicationContext());
+            this.contentResolver = activity.getApplicationContext().getContentResolver();
+            this.folder = folder;
+            this.json = json;
+            this.fileName = fileName;
+            this.path = path;
+            this.table = table;
+            this.column = column;
+            this.filterValue = filterValue;
+            this.maxRows = maxRows;
+        }
+
+        @Override protected FolderExportResult doInBackground(Void... ignored) {
+            File temp = null;
+            try {
+                temp = new File(exportDirectory, "." + fileName + ".tmp");
+                DatabaseInspector.ExportResult result = InspectorCore.databaseInspector().export(path, table,
+                        column, filterValue, temp, json, maxRows);
+                String mime = json ? "application/json" : "text/csv";
+                Uri parent = DocumentsContract.buildDocumentUriUsingTree(folder,
+                        DocumentsContract.getTreeDocumentId(folder));
+                Uri target = DocumentsContract.createDocument(contentResolver, parent, mime, fileName);
+                if (target == null) throw new IllegalStateException("Unable to create export document");
+                copyFile(temp, contentResolver, target);
+                return new FolderExportResult(result, null);
+            } catch (Exception error) {
+                return new FolderExportResult(null, error.toString());
+            } finally {
+                if (temp != null && temp.exists()) temp.delete();
+            }
+        }
+
+        @Override protected void onPostExecute(FolderExportResult result) {
+            DatabaseRowsActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+            if (result.value == null) {
+                Toast.makeText(activity, activity.getString(R.string.inspector_export_failed, result.error),
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
+            String suffix = result.value.truncated ? activity.getString(R.string.inspector_export_truncated) : "";
+            Toast.makeText(activity, activity.getString(R.string.inspector_export_saved,
+                    fileName, result.value.rows, suffix), Toast.LENGTH_LONG).show();
+        }
     }
 }

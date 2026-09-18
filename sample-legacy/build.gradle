@@ -30,6 +30,12 @@ android {
             applicationIdSuffix ".debug"
             signingConfig signingConfigs.debug
         }
+        selective {
+            initWith debug
+            applicationIdSuffix ".selective"
+            matchingFallbacks = ["debug"]
+            signingConfig signingConfigs.debug
+        }
         release {
             minifyEnabled false
             signingConfig signingConfigs.debug
@@ -41,6 +47,8 @@ android {
 dependencies {
     implementation project(":inspector-api")
     debugImplementation project(":inspector")
+    selectiveImplementation project(":inspector-http")
+    selectiveImplementation project(":inspector-serial")
     releaseImplementation project(":inspector-no-op")
     implementation "com.squareup.okhttp3:okhttp:${rootProject.ext.okHttp3Version}"
     implementation "com.squareup.okio:okio:${rootProject.ext.okioVersion}"

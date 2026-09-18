@@ -3,6 +3,7 @@ package com.allynav.debug.inspector.api;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -27,6 +28,27 @@ public final class InspectorApiTest {
         assertTrue(config.getRedactedHeaderNames().contains("authorization"));
         assertTrue(config.getRedactedHeaderNames().contains("auth-token"));
         assertFalse(config.getRedactedHeaderNames().contains("password"));
+    }
+
+    @Test
+    public void configCopiesSkipRulesAndNormalizesDomains() {
+        String[] paths = new String[]{"/health"};
+        Pattern pathPattern = Pattern.compile("/internal/.*");
+        InspectorConfig config = InspectorConfig.builder()
+                .alwaysReadResponseBody(true)
+                .skipPaths(paths)
+                .skipPathPatterns(pathPattern)
+                .skipPaths(Pattern.compile("/ignored/.*"))
+                .skipDomains("API.EXAMPLE.TEST")
+                .skipDomainPatterns(Pattern.compile(".*\\.internal\\.test"))
+                .skipDomains(Pattern.compile(".*\\.alias\\.test"))
+                .build();
+        paths[0] = "/changed";
+        assertTrue(config.isAlwaysReadResponseBody());
+        assertEquals("/health", config.getSkippedPaths().get(0));
+        assertTrue(config.getSkippedPathPatterns().contains(pathPattern));
+        assertTrue(config.getSkippedDomains().contains("api.example.test"));
+        assertEquals(2, config.getSkippedDomainPatterns().size());
     }
 
     @Test

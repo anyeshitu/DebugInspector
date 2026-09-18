@@ -2,17 +2,17 @@
 
 ## 1. 依赖
 
-将 `DebugInspector/local-maven` 配置为 Maven 仓库，然后按变体依赖：
+将 DebugInspector 发布到本机 Maven 仓库，并在宿主项目中启用 `mavenLocal()`：
 
 ```groovy
 repositories {
-    maven { url uri("C:/lwd/project/DebugInspector/local-maven") }
+    mavenLocal()
 }
 
 dependencies {
-    debugImplementation "com.allynav.debug:inspector:0.1.0-SNAPSHOT"
-    betaImplementation "com.allynav.debug:inspector:0.1.0-SNAPSHOT"
-    releaseImplementation "com.allynav.debug:inspector-no-op:0.1.0-SNAPSHOT"
+    debugImplementation "com.allynav.debug:inspector-http:1.0.0"
+    betaImplementation "com.allynav.debug:inspector-http:1.0.0"
+    releaseImplementation "com.allynav.debug:inspector-no-op:1.0.0"
 
     // 宿主继续使用自己的 OkHttp 版本；Phase 1 支持 3.4.1 API 面。
     implementation "com.squareup.okhttp3:okhttp:3.4.1"
@@ -26,6 +26,9 @@ dependencies {
 ```java
 InspectorConfig config = InspectorConfig.builder()
         .redactHeaders("Auth-Token", "Authorization")
+        .skipPaths("/health", "/metrics")
+        .skipDomains("cdn.example.com")
+        .alwaysReadResponseBody(true)
         .addBodyTransformer(new PlatformBodyTransformer())
         .entryConfig(EntryConfig.builder()
                 .notificationEnabled(true)
@@ -38,6 +41,8 @@ DebugInspector.initialize(application, config);
 ```
 
 `redactHeaders` 按 Header 名称匹配且不区分大小写。`Bearer` 通常是 `Authorization` 的值前缀，不是 Header 名；配置 `Authorization` 即可遮盖 Bearer Token。
+
+`skipPaths` 和 `skipDomains` 只跳过调试记录，不会阻止请求继续发送；需要正则时使用 `skipPathPatterns` 或 `skipDomainPatterns`。`alwaysReadResponseBody` 是 Chucker 兼容配置，用于声明响应正文需要被采集，即使宿主稍后未主动读取。
 
 SDK 不脱敏 Body。账号、密码、参数以及加解密前后的 Body 都会持久化、搜索、显示和导出。
 
